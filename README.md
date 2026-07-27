@@ -1,15 +1,18 @@
 # 🏋️‍♂️ Fitness Challenge Tracking Platform
 
-Welcome to the **Fitness Challenge Tracking Platform**! This is a full-stack web application designed to help users join fitness challenges, track their workouts, log progress, and connect with other fitness enthusiasts.
+Welcome to the **Fitness Challenge Tracking Platform**! This is a full-stack web application designed to help users join fitness challenges, track their workouts, log progress, and connect with trainers and fitness enthusiasts.
 
 ---
 
 ## 🚀 Features
-- **User Authentication**: Secure sign-up/login with cookie-based session management.
-- **Fitness Challenges**: Join existing challenges or create your own daily/weekly workout challenges.
-- **Progress Tracking**: Log your daily workouts, steps, active calories, and weight over time.
-- **Dynamic Frontend**: Modern UI styled using **Tailwind CSS v4** with fast builds powered by **Vite** and **React**.
-- **Robust Backend**: Node.js & Express REST API with MongoDB integration using Mongoose.
+
+- **User Authentication**: Secure sign-up/login with HTTP-only cookie session management.
+- **Role-Based Access Control**: Support for `admin`, `member`, and `trainer` roles.
+- **Fitness Challenges**: Create, join, and track multi-day fitness challenges.
+- **Workouts Management**: Create custom workout routines with video exercise links, calorie metrics, and difficulty levels.
+- **Progress & Leaderboard**: Log user points per challenge and display global rankings.
+- **Trainer Tools**: Trainer-member assignment and customized workout plan dispatching.
+- **Admin Dashboard**: Real-time platform statistics for user counts, active challenges, and total workouts.
 
 ---
 
@@ -24,6 +27,7 @@ Welcome to the **Fitness Challenge Tracking Platform**! This is a full-stack web
 - **Runtime**: Node.js
 - **Framework**: Express
 - **Database**: MongoDB (via Mongoose)
+- **Security**: JWT & HTTP-only Cookies
 
 ---
 
@@ -31,11 +35,12 @@ Welcome to the **Fitness Challenge Tracking Platform**! This is a full-stack web
 
 ```text
 ├── backend/
-│   ├── controller/      # API Route controller logic
+│   ├── controller/      # Route handler controllers (auth, user, workout, challenge, progress, etc.)
 │   ├── db/              # Database connection setup (db.js)
-│   ├── model/           # Mongoose schemas & database models
+│   ├── middleware/      # Authentication & role authorization middleware
+│   ├── model/           # Mongoose schemas (User, Challenge, Progress, Workout)
 │   ├── router/          # Express route definitions
-│   ├── .env             # Environment variables configurations
+│   ├── .env             # Environment variables configuration
 │   ├── index.js         # Main server initialization file
 │   └── package.json     # Backend package manifest
 │
@@ -54,58 +59,86 @@ Welcome to the **Fitness Challenge Tracking Platform**! This is a full-stack web
 
 ---
 
-## ⚡ Installation & Getting Started
+## 📡 REST API Documentation
 
-Make sure you have Node.js and `pnpm` installed on your machine.
+### 🔑 Auth APIs
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Register a new user |
+| `POST` | `/api/auth/login` | Login user & set HTTP cookie |
+| `POST` | `/api/auth/logout` | Clear auth cookie |
+| `GET` | `/api/auth/me` | Get current authenticated user |
 
-### 1. Clone the repository and open the workspace
-```bash
-cd "Fitness Challenge Tracking Platform"
-```
+### 👤 User APIs
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/users/profile` | Get user profile details |
+| `PUT` | `/api/users/profile` | Update profile information |
+| `GET` | `/api/users` | Get all users list (Admin) |
+| `PUT` | `/api/users/assign-trainer` | Assign trainer to member (Admin) |
 
-### 2. Configure Backend Setup
-1. Navigate to the `backend` directory:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-3. Create a `.env` file in the `backend/` directory:
-   ```env
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/fitness-tracker
-   CORS_ORIGIN=http://localhost:5173
-   ```
-4. Start the backend development server:
-   ```bash
-   pnpm run dev
-   ```
+### 🏋️ Workout APIs
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/workouts` | Create workout (Trainer/Admin) |
+| `GET` | `/api/workouts` | Get all workouts |
+| `GET` | `/api/workouts/:id` | Get single workout details |
+| `POST` | `/api/workouts/:id/assign` | Assign workout to user |
 
-### 3. Configure Frontend Setup
-1. Open a new terminal and navigate to the `frontend` directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-3. Start the frontend Vite development server:
-   ```bash
-   pnpm run dev
-   ```
+### 🎯 Challenge APIs
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/challenges` | Create challenge (Trainer/Admin) |
+| `GET` | `/api/challenges` | Get all challenges |
+| `GET` | `/api/challenges/:id` | Get challenge details |
+| `POST` | `/api/challenges/:id/join` | Join challenge (Member) |
+| `PUT` | `/api/challenges/:id` | Update challenge details |
+| `DELETE` | `/api/challenges/:id` | Delete challenge |
+
+### 📈 Progress & Leaderboard APIs
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/progress` | Create challenge progress record |
+| `PUT` | `/api/progress/:id/points` | Add points to participant |
+| `GET` | `/api/progress/:challengeId` | Get progress for a challenge |
+| `GET` | `/api/leaderboard` | Get global leaderboard rankings |
+
+### 👨‍🏫 Trainer & Admin APIs
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/trainers/members` | Get trainer's assigned members |
+| `POST` | `/api/trainers/workout-plan` | Assign workout plan to member |
+| `GET` | `/api/admin/dashboard` | Get platform metrics stats (Admin) |
 
 ---
 
-## 📡 API Endpoints (Quick Reference)
+## ⚡ Installation & Getting Started
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/` | API status check |
+### 1. Clone & Configure Backend
+```bash
+cd backend
+npm install
+```
+Set `.env` parameters:
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/fitness-tracker
+CORS_ORIGIN=http://localhost:5173
+JWT_SECRET=super_secret_jwt_key
+```
+Run backend server:
+```bash
+npm run dev
+```
+
+### 2. Configure Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
 ## 🤝 Contributing
-Feel free to open issues or pull requests to improve the application! Enjoy your fitness journey! 💪
+Feel free to open issues or pull requests to improve the platform! 💪
