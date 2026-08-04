@@ -181,6 +181,3 @@ pnpm run build
 This compiles TypeScript using `tsc -b` and bundles assets with Vite into `frontend/dist`.
 
 ---
-
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more details.
