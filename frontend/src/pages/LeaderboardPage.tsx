@@ -163,7 +163,8 @@ function LeaderboardPage() {
             </h3>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full text-left">
               <thead className="bg-surface-container-low text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-label-caps border-b border-outline-variant">
                 <tr>
@@ -218,6 +219,73 @@ function LeaderboardPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Grid View */}
+          <div className="block md:hidden p-4 space-y-4 bg-surface-container-low">
+            {remainingStandings.map((entry: any) => (
+              <div
+                key={entry.id || entry.name}
+                className="bg-surface-container p-5 rounded-2xl border border-outline-variant shadow-lg"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xl font-black text-primary-container font-label-caps">
+                    #{entry.rank < 10 ? `0${entry.rank}` : entry.rank}
+                  </span>
+                  <span
+                    className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase ${
+                      entry.role === 'trainer'
+                        ? 'bg-secondary-container text-on-secondary-fixed'
+                        : 'bg-surface-container-highest text-primary'
+                    }`}
+                  >
+                    {entry.role || 'member'}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src={entry.avatar || 'https://shorturl.at/FmV3K'}
+                    alt={entry.name}
+                    className="w-12 h-12 rounded-full object-cover border border-outline-variant flex-shrink-0"
+                  />
+                  <div>
+                    <p className="font-bold text-white text-base">{entry.name}</p>
+                    <p className="text-xs text-on-surface-variant">{entry.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-outline-variant text-xs">
+                  <div className="bg-surface-container-highest/50 p-3 rounded-xl border border-outline-variant/60">
+                    <p className="text-[10px] text-on-surface-variant font-label-caps uppercase">TOTAL POINTS</p>
+                    <p className="text-base font-bold text-white mt-1">
+                      {(entry.points || 0).toLocaleString()} PTS
+                    </p>
+                  </div>
+
+                  <div className="bg-surface-container-highest/50 p-3 rounded-xl border border-outline-variant/60">
+                    <p className="text-[10px] text-on-surface-variant font-label-caps uppercase">CALORIES</p>
+                    <p className="text-base font-bold text-emerald-400 mt-1">
+                      {(entry.completedCalories || 0).toLocaleString()} KCAL
+                    </p>
+                  </div>
+
+                  <div className="bg-surface-container-highest/50 p-3 rounded-xl border border-outline-variant/60">
+                    <p className="text-[10px] text-on-surface-variant font-label-caps uppercase">WORKOUTS</p>
+                    <p className="text-sm font-bold text-on-surface-variant mt-1">
+                      {entry.completedWorkoutsCount || 0} Sessions
+                    </p>
+                  </div>
+
+                  <div className="bg-surface-container-highest/50 p-3 rounded-xl border border-outline-variant/60">
+                    <p className="text-[10px] text-on-surface-variant font-label-caps uppercase">CHALLENGES</p>
+                    <p className="text-sm font-bold text-secondary-container mt-1">
+                      {entry.completedChallengesCount || 0} Joined
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       </main>

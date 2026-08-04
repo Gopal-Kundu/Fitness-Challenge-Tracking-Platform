@@ -247,7 +247,7 @@ function TrainerPage() {
           {/* Athlete Performance Hub */}
           <div className="lg:col-span-4 bg-surface-container p-6 rounded-2xl border border-outline-variant space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="font-headline-md text-xl text-primary font-bold">ATHLETES</h2>
+              <h2 className="font-headline-md text-xl text-primary font-bold">MEMBERS</h2>
               
             </div>
             {members.length > 0 && (

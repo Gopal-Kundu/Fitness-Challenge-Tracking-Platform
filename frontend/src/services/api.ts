@@ -1,4 +1,26 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'development' ? '/api' : 'https://fitness-challenge-tracking-platform-beta.vercel.app/api');
+const getApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const isLocal =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.startsWith('192.168.') ||
+      hostname.endsWith('.local');
+
+    if (isLocal) {
+      return import.meta.env.MODE === 'development' ? '/api' : 'http://localhost:5000/api';
+    }
+  }
+
+  return 'https://fitness-challenge-tracking-platform-beta.vercel.app/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 
 let activeRequestsCount = 0;
 const loadingSubscribers = new Set<(loading: boolean) => void>();

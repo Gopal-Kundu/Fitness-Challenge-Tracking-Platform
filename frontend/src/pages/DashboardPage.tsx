@@ -195,19 +195,6 @@ function DashboardPage() {
 
           {/* Side Progress & Leaderboard Snapshot */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant space-y-4">
-              <h3 className="font-headline-md text-lg text-primary font-bold">WEEKLY GOAL</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between font-label-caps text-xs text-on-surface-variant">
-                  <span>OUTPUT</span>
-                  <span className="text-primary-container font-bold">8.4 / 10.0 HRS</span>
-                </div>
-                <div className="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-primary-container to-secondary-container w-[84%]"></div>
-                </div>
-              </div>
-            </div>
-
             {featuredChallenge && (
               <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant space-y-4">
                 <div className="flex justify-between items-center">

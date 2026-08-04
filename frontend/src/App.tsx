@@ -33,11 +33,7 @@ function GlobalAPILoader() {
       {/* Top Pulsing Glowing Progress Bar */}
       <div className="h-1 w-full bg-gradient-to-r from-primary-container via-lime-400 to-emerald-400 animate-pulse shadow-glow"></div>
       
-      {/* Floating Status Pill */}
-      <div className="absolute top-3 right-6 bg-surface-container/90 border border-outline-variant text-on-surface text-xs font-bold px-3 py-1.5 rounded-full shadow-2xl backdrop-blur-md flex items-center gap-2 animate-in fade-in zoom-in duration-200">
-        <div className="w-3 h-3 border-2 border-primary-container border-t-transparent rounded-full animate-spin"></div>
-        <span className="font-label-caps text-[10px] text-primary-container uppercase tracking-wider">SYNCING DATA...</span>
-      </div>
+      
     </div>
   );
 }
@@ -126,9 +122,6 @@ function App() {
       <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6 text-on-background">
         <div className="relative flex items-center justify-center mb-6">
           <div className="w-16 h-16 border-4 border-surface-container-highest border-t-primary-container rounded-full animate-spin"></div>
-          <span className="material-symbols-outlined absolute text-primary-container text-2xl">
-            bolt
-          </span>
         </div>
         <h2 className="font-display-lg text-xl text-primary font-bold tracking-widest uppercase mb-1">
           APEX PERFORMANCE

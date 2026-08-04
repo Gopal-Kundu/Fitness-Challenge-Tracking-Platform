@@ -1,15 +1,23 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background text-on-background font-body-md overflow-x-hidden">
       {/* Top Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant px-6 md:px-12 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary-container text-3xl">bolt</span>
-          <span className="font-headline-md text-2xl font-black text-primary tracking-wider uppercase">APEX PERFORMANCE</span>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="material-symbols-outlined text-primary-container text-2xl sm:text-3xl">bolt</span>
+          <span className="font-headline-md text-lg sm:text-2xl font-black text-primary tracking-wider uppercase">
+            <span className="hidden sm:inline">APEX PERFORMANCE</span>
+            <span className="sm:hidden">APEX</span>
+          </span>
         </div>
-        <div className="flex items-center gap-4">
+
+        {/* Desktop Links */}
+        <div className="hidden sm:flex items-center gap-4">
           <Link
             to="/login"
             className="px-5 py-2.5 rounded-lg border border-outline-variant text-on-surface hover:border-primary-container font-label-caps text-xs transition-all cursor-pointer"
@@ -23,7 +31,42 @@ function LandingPage() {
             JOIN NOW
           </Link>
         </div>
+
+        {/* Mobile Menu Button */}
+        <div className="flex sm:hidden items-center">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-primary p-2 focus:outline-none cursor-pointer flex items-center justify-center rounded-lg hover:bg-surface-container-high"
+            aria-label="Toggle Navigation Menu"
+          >
+            <span className="material-symbols-outlined text-2xl">
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
+        </div>
       </header>
+
+      {/* Mobile Navigation Dropdown */}
+      {mobileMenuOpen && (
+        <div className="fixed top-[65px] left-0 right-0 z-40 bg-surface-container-low/95 backdrop-blur-xl border-b border-outline-variant p-6 sm:hidden space-y-4 animate-in slide-in-from-top duration-200 shadow-2xl">
+          <div className="flex flex-col gap-3">
+            <Link
+              to="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center px-5 py-3 rounded-xl border border-outline-variant text-on-surface hover:border-primary-container font-label-caps text-sm font-bold transition-all cursor-pointer"
+            >
+              SIGN IN
+            </Link>
+            <Link
+              to="/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center px-6 py-3 rounded-xl bg-primary-container text-on-primary-container font-headline-md text-sm font-bold hover:brightness-110 transition-all glow-lime cursor-pointer"
+            >
+              JOIN NOW
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section - Centered */}
       <section className="relative pt-36 pb-20 px-6 md:px-12 max-w-[1440px] mx-auto min-h-[90vh] flex flex-col justify-center items-center text-center">

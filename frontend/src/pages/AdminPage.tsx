@@ -286,10 +286,10 @@ function AdminPage() {
         </section>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-outline-variant gap-4">
+        <div className="flex flex-wrap sm:flex-nowrap border-b border-outline-variant gap-2 sm:gap-4">
           <button
             onClick={() => setActiveTab('users')}
-            className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
+            className={`pb-3 font-bold border-b-2 transition-all cursor-pointer text-sm sm:text-base ${
               activeTab === 'users'
                 ? 'border-primary-container text-primary-container'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
@@ -299,7 +299,7 @@ function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('assign')}
-            className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
+            className={`pb-3 font-bold border-b-2 transition-all cursor-pointer text-sm sm:text-base ${
               activeTab === 'assign'
                 ? 'border-primary-container text-primary-container'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
@@ -307,27 +307,25 @@ function AdminPage() {
           >
             Add &amp; Assign Trainer / Member
           </button>
-
         </div>
 
         {/* Tab 1: User Management */}
         {activeTab === 'users' && (
           <div className="space-y-6">
-
             <div className="flex flex-col sm:flex-row justify-between gap-4">
               <input
                 type="text"
                 placeholder="Search member or trainer by name/email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-surface-container-low border border-outline-variant px-4 py-2.5 rounded-lg w-full max-w-md text-on-surface outline-none focus:border-primary-container"
+                className="bg-surface-container-low border border-outline-variant px-4 py-2.5 rounded-lg w-full max-w-md text-on-surface outline-none focus:border-primary-container text-sm"
               />
               <div className="flex gap-2">
                 {['all', 'member', 'trainer'].map((role) => (
                   <button
                     key={role}
                     onClick={() => setFilterRole(role)}
-                    className={`px-4 py-2 rounded-lg font-bold text-xs capitalize cursor-pointer ${
+                    className={`px-4 py-2 rounded-lg font-bold text-xs capitalize cursor-pointer flex-1 sm:flex-none ${
                       filterRole === role
                         ? 'bg-primary-container text-on-primary-container'
                         : 'bg-surface-container-high text-on-surface-variant'
@@ -339,7 +337,8 @@ function AdminPage() {
               </div>
             </div>
 
-            <div className="bg-surface-container rounded-2xl border border-outline-variant overflow-hidden shadow-xl">
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-surface-container rounded-2xl border border-outline-variant overflow-hidden shadow-xl">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-high border-b border-outline-variant text-on-surface-variant font-label-caps text-xs">
@@ -379,7 +378,6 @@ function AdminPage() {
                           </span>
                         )}
                       </td>
-
                       <td className="p-4 text-xs font-bold text-on-surface-variant">
                         {u.completedWorkoutsCount || 0} Sessions • {(u.completedCalories || 0).toLocaleString()} KCAL
                       </td>
@@ -400,18 +398,96 @@ function AdminPage() {
                             </button>
                           </>
                         ) : (
-                            <button
-                              onClick={() => setUserToDelete(u)}
-                              className="px-3 py-1 bg-surface-container-highest text-red-400 hover:bg-red-500 hover:text-white rounded text-xs font-bold cursor-pointer transition-colors"
-                            >
-                              Delete
-                            </button>
+                          <button
+                            onClick={() => setUserToDelete(u)}
+                            className="px-3 py-1 bg-surface-container-highest text-red-400 hover:bg-red-500 hover:text-white rounded text-xs font-bold cursor-pointer transition-colors"
+                          >
+                            Delete
+                          </button>
                         )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card Grid View */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+              {filteredUsers.map((u) => (
+                <div
+                  key={u.id}
+                  className="bg-surface-container p-5 rounded-2xl border border-outline-variant space-y-4 shadow-lg"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-bold text-white text-base">{u.name}</h4>
+                      <p className="text-xs text-on-surface-variant">{u.email}</p>
+                    </div>
+                    <span
+                      className={`px-2.5 py-1 rounded text-xs font-bold uppercase ${
+                        u.role === 'trainer'
+                          ? 'bg-secondary-container text-on-secondary-fixed'
+                          : 'bg-surface-container-highest text-primary'
+                      }`}
+                    >
+                      {u.role}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-outline-variant text-xs">
+                    <div>
+                      <span className="text-on-surface-variant font-label-caps text-[10px] block">STATUS</span>
+                      {u.status === 'pending' ? (
+                        <span className="bg-yellow-500/20 text-yellow-400 font-bold px-2 py-0.5 rounded text-[11px]">
+                          Pending Approval
+                        </span>
+                      ) : u.status === 'blocked' ? (
+                        <span className="bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded text-[11px]">
+                          Blocked
+                        </span>
+                      ) : (
+                        <span className="bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded text-[11px]">
+                          Active
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="text-on-surface-variant font-label-caps text-[10px] block">WORKOUTS &amp; KCAL</span>
+                      <span className="font-bold text-white">
+                        {u.completedWorkoutsCount || 0} Sessions • {(u.completedCalories || 0).toLocaleString()} KCAL
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-outline-variant flex justify-end gap-2">
+                    {u.status === 'pending' ? (
+                      <>
+                        <button
+                          onClick={() => handleApproveRegistration(u.id, true)}
+                          className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500 cursor-pointer"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleApproveRegistration(u.id, false)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-500 cursor-pointer"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setUserToDelete(u)}
+                        className="px-4 py-2 bg-surface-container-highest text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                      >
+                        Delete User
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
