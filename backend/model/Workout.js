@@ -37,8 +37,7 @@ const workoutSchema = new mongoose.Schema(
       default: 'medium',
     },
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: mongoose.Schema.Types.Mixed,
     },
   },
   {

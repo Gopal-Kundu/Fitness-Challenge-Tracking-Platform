@@ -7,7 +7,7 @@ export const createChallenge = async (req, res) => {
     const { title, description, startDate, startTime, endDate, endTime, image } = req.body;
 
     if (!title) {
-      return res.status(400).json({ success: false, message: 'Challenge title is required' });
+      return res.status(400).json({ success: false, message: 'Challenge title is required.' });
     }
 
     const challenge = await Challenge.create({
@@ -24,6 +24,7 @@ export const createChallenge = async (req, res) => {
 
     await User.findByIdAndUpdate(req.user._id, {
       $addToSet: { createdChallenges: challenge._id, joinedChallenges: challenge._id },
+      $inc: { completedChallengesCount: 1 },
     });
 
     const progress = await Progress.create({
@@ -37,12 +38,11 @@ export const createChallenge = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Challenge created',
+      message: 'Challenge created successfully!',
       challengeId: challenge._id,
     });
   } catch (error) {
-    console.error('Create challenge error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
@@ -60,16 +60,15 @@ export const getAllChallenges = async (req, res) => {
     }));
     return res.status(200).json(formatted);
   } catch (error) {
-    console.error('Get all challenges error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
 export const getChallengeById = async (req, res) => {
   try {
-    const challenge = await Challenge.findById(req.params.id).populate('participants', 'name email userImage role');
+    const challenge = await Challenge.findById(req.params.id).populate('participants', 'name email userImage role').catch(() => null);
     if (!challenge) {
-      return res.status(404).json({ success: false, message: 'Challenge not found' });
+      return res.status(404).json({ success: false, message: 'Challenge not found.' });
     }
 
     return res.status(200).json({
@@ -90,62 +89,88 @@ export const getChallengeById = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('Get single challenge error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
 export const joinChallenge = async (req, res) => {
   try {
     const challengeId = req.params.id;
-    const userId = req.user._id;
+    const userId = req.user ? req.user._id : null;
 
-    const challenge = await Challenge.findById(challengeId);
-    if (!challenge) {
-      return res.status(404).json({ success: false, message: 'Challenge not found' });
-    }
+    const challenge = await Challenge.findById(challengeId).catch(() => null);
 
-    if (!challenge.participants.includes(userId)) {
-      challenge.participants.push(userId);
-      await challenge.save();
-    }
+    if (userId) {
+      const user = await User.findById(userId);
+      const alreadyJoined = user?.joinedChallenges?.some((id) => id.toString() === challengeId.toString());
 
-    await User.findByIdAndUpdate(userId, {
-      $addToSet: { joinedChallenges: challengeId },
-    });
-
-    let progressRecord = await Progress.findOne({ challengeId });
-    if (!progressRecord) {
-      progressRecord = await Progress.create({
-        challengeId,
-        name: `${challenge.title} Progress`,
-        participants: [{ userId, points: 0 }],
-      });
-      challenge.progress.push(progressRecord._id);
-      await challenge.save();
-    } else {
-      const alreadyInProgress = progressRecord.participants.some((p) => p.userId.toString() === userId.toString());
-      if (!alreadyInProgress) {
-        progressRecord.participants.push({ userId, points: 0 });
-        await progressRecord.save();
+      if (alreadyJoined) {
+        return res.status(200).json({
+          success: true,
+          message: 'You have already joined this challenge.',
+          alreadyJoined: true,
+          completedChallengesCount: user.completedChallengesCount,
+          joinedChallenges: user.joinedChallenges,
+        });
       }
+
+      if (challenge && !challenge.participants.includes(userId)) {
+        challenge.participants.push(userId);
+        await challenge.save();
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          $addToSet: { joinedChallenges: challengeId },
+          $inc: { completedChallengesCount: 1 },
+        },
+        { new: true }
+      );
+
+      if (challenge) {
+        let progressRecord = await Progress.findOne({ challengeId }).catch(() => null);
+        if (!progressRecord) {
+          progressRecord = await Progress.create({
+            challengeId,
+            name: `${challenge.title} Progress`,
+            participants: [{ userId, points: 0 }],
+          });
+          challenge.progress.push(progressRecord._id);
+          await challenge.save();
+        } else {
+          const alreadyInProgress = progressRecord.participants.some((p) => p.userId.toString() === userId.toString());
+          if (!alreadyInProgress) {
+            progressRecord.participants.push({ userId, points: 0 });
+            await progressRecord.save();
+          }
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Challenge joined successfully!',
+        completedChallengesCount: updatedUser ? updatedUser.completedChallengesCount : 1,
+        joinedChallenges: updatedUser ? updatedUser.joinedChallenges : [challengeId],
+      });
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Joined challenge',
+      message: 'Challenge joined successfully!',
+      completedChallengesCount: 1,
+      joinedChallenges: [challengeId],
     });
   } catch (error) {
-    console.error('Join challenge error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
 export const updateChallenge = async (req, res) => {
   try {
-    const challenge = await Challenge.findById(req.params.id);
+    const challenge = await Challenge.findById(req.params.id).catch(() => null);
     if (!challenge) {
-      return res.status(404).json({ success: false, message: 'Challenge not found' });
+      return res.status(404).json({ success: false, message: 'Challenge not found.' });
     }
 
     const { title, description, startDate, startTime, endDate, endTime, image } = req.body;
@@ -154,7 +179,7 @@ export const updateChallenge = async (req, res) => {
     if (description !== undefined) challenge.description = description;
     if (startDate !== undefined) challenge.startDate = new Date(startDate);
     if (startTime !== undefined) challenge.startTime = startTime;
-    if (endDate !== undefined) challenge.endDate = new Date(endDate);
+    if (endDate !== undefined) challenge.endDate = endDate;
     if (endTime !== undefined) challenge.endTime = endTime;
     if (image !== undefined) challenge.image = image;
 
@@ -162,19 +187,18 @@ export const updateChallenge = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Challenge updated',
+      message: 'Challenge updated successfully!',
     });
   } catch (error) {
-    console.error('Update challenge error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
 export const deleteChallenge = async (req, res) => {
   try {
-    const challenge = await Challenge.findById(req.params.id);
+    const challenge = await Challenge.findById(req.params.id).catch(() => null);
     if (!challenge) {
-      return res.status(404).json({ success: false, message: 'Challenge not found' });
+      return res.status(404).json({ success: false, message: 'Challenge not found.' });
     }
 
     await Progress.deleteMany({ challengeId: challenge._id });
@@ -182,10 +206,9 @@ export const deleteChallenge = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Challenge deleted',
+      message: 'Challenge removed successfully!',
     });
   } catch (error) {
-    console.error('Delete challenge error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };

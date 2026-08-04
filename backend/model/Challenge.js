@@ -15,6 +15,14 @@ const challengeSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    category: {
+      type: String,
+      default: 'ENDURANCE',
+    },
+    reward: {
+      type: String,
+      default: '500 APEX Pts',
+    },
     startDate: {
       type: Date,
     },
@@ -28,19 +36,16 @@ const challengeSchema = new mongoose.Schema(
       type: String,
     },
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: mongoose.Schema.Types.Mixed,
     },
     participants: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        type: mongoose.Schema.Types.Mixed,
       },
     ],
     progress: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Progress',
+        type: mongoose.Schema.Types.Mixed,
       },
     ],
   },

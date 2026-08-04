@@ -12,12 +12,12 @@ export const register = async (req, res) => {
     const { name, email, password, role, age, gender, height, weight, userImage } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+      return res.status(400).json({ success: false, message: 'Name, email, and password are required.' });
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: 'User already exists with this email' });
+      return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -32,7 +32,7 @@ export const register = async (req, res) => {
       gender: gender || '',
       height: height || null,
       weight: weight || null,
-      userImage: userImage || '',
+      userImage: userImage || 'https://shorturl.at/FmV3K',
     });
 
     const token = generateToken(user._id);
@@ -46,16 +46,25 @@ export const register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Account created successfully!',
       user: {
         id: user._id,
         name: user.name,
+        email: user.email,
         role: user.role,
+        image: user.userImage || 'https://shorturl.at/FmV3K',
+        workoutPlan: user.workoutPlan || '',
+        dietPlan: user.dietPlan || '',
+        trainerName: 'Coach Marcus',
+        completedCalories: user.completedCalories || 0,
+        completedWorkoutsCount: user.completedWorkoutsCount || 0,
+        completedChallengesCount: user.completedChallengesCount || 0,
+        joinedChallenges: user.joinedChallenges || [],
+        completedWorkouts: user.completedWorkouts || [],
       },
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
@@ -64,17 +73,17 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Please provide email and password' });
+      return res.status(400).json({ success: false, message: 'Please enter your email and password.' });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid credentials' });
+      return res.status(400).json({ success: false, message: 'Invalid email or password.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'Invalid credentials' });
+      return res.status(400).json({ success: false, message: 'Invalid email or password.' });
     }
 
     const token = generateToken(user._id);
@@ -86,18 +95,34 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    let trainerName = 'Coach Marcus';
+    if (user.trainerId) {
+      const tUser = await User.findById(user.trainerId).select('name').catch(() => null);
+      if (tUser && tUser.name) trainerName = tUser.name;
+    }
+
     return res.status(200).json({
       success: true,
       token,
+      message: 'Logged in successfully!',
       user: {
         id: user._id,
         name: user.name,
+        email: user.email,
         role: user.role,
+        image: user.userImage || 'https://shorturl.at/FmV3K',
+        workoutPlan: user.workoutPlan || '',
+        dietPlan: user.dietPlan || '',
+        trainerName,
+        completedCalories: user.completedCalories || 0,
+        completedWorkoutsCount: user.completedWorkoutsCount || 0,
+        completedChallengesCount: user.completedChallengesCount || 0,
+        joinedChallenges: user.joinedChallenges || [],
+        completedWorkouts: user.completedWorkouts || [],
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
@@ -107,10 +132,17 @@ export const logout = async (req, res) => {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
   });
-  return res.status(200).json({ success: true, message: 'Logged out successfully' });
+  return res.status(200).json({ success: true, message: 'Logged out successfully!' });
 };
 
 export const getMe = async (req, res) => {
+  let trainerName = req.user.trainerName || '';
+  if (!trainerName && req.user.trainerId) {
+    const tUser = await User.findById(req.user.trainerId).select('name').catch(() => null);
+    if (tUser && tUser.name) trainerName = tUser.name;
+  }
+  if (!trainerName) trainerName = 'Coach Marcus';
+
   return res.status(200).json({
     success: true,
     user: {
@@ -118,10 +150,19 @@ export const getMe = async (req, res) => {
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
-      image: req.user.userImage || '',
+      image: req.user.userImage || 'https://shorturl.at/FmV3K',
       trainerId: req.user.trainerId || null,
+      trainerName,
+      workoutPlan: req.user.workoutPlan || '',
+      dietPlan: req.user.dietPlan || '',
       weight: req.user.weight || null,
       height: req.user.height || null,
+      completedCalories: req.user.completedCalories || 0,
+      completedWorkoutsCount: req.user.completedWorkoutsCount || 0,
+      completedChallengesCount: req.user.completedChallengesCount || 0,
+      recentWorkout: req.user.recentWorkout || null,
+      joinedChallenges: req.user.joinedChallenges || [],
+      completedWorkouts: req.user.completedWorkouts || [],
     },
   });
 };

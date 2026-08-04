@@ -1,50 +1,61 @@
-import Progress from '../model/Progress.js';
 import User from '../model/User.js';
+import Progress from '../model/Progress.js';
 
 export const getLeaderboard = async (req, res) => {
   try {
-    const allProgress = await Progress.find({}).populate('participants.userId', 'name email userImage role');
+    const users = await User.find({ role: { $ne: 'admin' } }).lean();
+    const allProgress = await Progress.find({}).lean();
 
-    const userPointsMap = {};
-
+    // Map additional points from Progress records if any
+    const extraPointsMap = {};
     allProgress.forEach((prog) => {
-      prog.participants.forEach((p) => {
-        if (p.userId) {
-          const uId = p.userId._id.toString();
-          const name = p.userId.name || 'Anonymous';
-          if (!userPointsMap[uId]) {
-            userPointsMap[uId] = {
-              name,
-              points: 0,
-            };
+      if (Array.isArray(prog.participants)) {
+        prog.participants.forEach((p) => {
+          if (p.userId) {
+            const uId = String(p.userId._id || p.userId);
+            extraPointsMap[uId] = (extraPointsMap[uId] || 0) + (p.points || 0);
           }
-          userPointsMap[uId].points += p.points || 0;
-        }
-      });
-    });
-
-    const allUsers = await User.find({}).select('name');
-    allUsers.forEach((u) => {
-      const uId = u._id.toString();
-      if (!userPointsMap[uId]) {
-        userPointsMap[uId] = {
-          name: u.name,
-          points: 0,
-        };
+        });
       }
     });
 
-    const sortedLeaderboard = Object.values(userPointsMap)
-      .sort((a, b) => b.points - a.points)
-      .map((entry, index) => ({
-        rank: index + 1,
-        name: entry.name,
-        points: entry.points,
-      }));
+    const leaderboard = users.map((user) => {
+      const uId = String(user._id);
+      const calories = Number(user.completedCalories) || 0;
+      const workouts = Number(user.completedWorkoutsCount) || 0;
+      const challenges = Array.isArray(user.joinedChallenges)
+        ? user.joinedChallenges.length
+        : Number(user.completedChallengesCount) || 0;
+      const extraPts = extraPointsMap[uId] || 0;
 
-    return res.status(200).json(sortedLeaderboard);
+      // Point calculation formula: Calories + (Workouts * 100) + (Challenges * 500) + Extra progress points
+      const totalPoints = calories + (workouts * 100) + (challenges * 500) + extraPts;
+
+      return {
+        id: user._id,
+        name: user.name || 'Athlete',
+        email: user.email || '',
+        role: user.role || 'member',
+        avatar: user.userImage || 'https://shorturl.at/FmV3K',
+        points: totalPoints,
+        completedCalories: calories,
+        completedWorkoutsCount: workouts,
+        completedChallengesCount: challenges,
+        membership: user.membership || 'Basic',
+      };
+    });
+
+    // Sort descending by total points
+    leaderboard.sort((a, b) => b.points - a.points);
+
+    // Assign dynamic ranks
+    const rankedLeaderboard = leaderboard.map((item, idx) => ({
+      ...item,
+      rank: idx + 1,
+    }));
+
+    return res.status(200).json({ success: true, leaderboard: rankedLeaderboard });
   } catch (error) {
-    console.error('Get leaderboard error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'Failed to fetch leaderboard data.' });
   }
 };

@@ -4,6 +4,7 @@ import {
   getAllWorkouts,
   getWorkoutById,
   assignWorkoutToUser,
+  completeWorkout,
 } from '../controller/workoutController.js';
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
@@ -13,5 +14,6 @@ router.get('/', getAllWorkouts);
 router.get('/:id', getWorkoutById);
 router.post('/', protect, authorizeRoles('admin', 'trainer'), createWorkout);
 router.post('/:id/assign', protect, assignWorkoutToUser);
+router.post('/:id/complete', protect, completeWorkout);
 
 export default router;

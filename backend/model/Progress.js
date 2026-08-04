@@ -3,8 +3,7 @@ import mongoose from 'mongoose';
 const progressSchema = new mongoose.Schema(
   {
     challengeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Challenge',
+      type: mongoose.Schema.Types.Mixed,
       required: true,
     },
     name: {
@@ -14,8 +13,7 @@ const progressSchema = new mongoose.Schema(
     participants: [
       {
         userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
+          type: mongoose.Schema.Types.Mixed,
         },
         points: {
           type: Number,

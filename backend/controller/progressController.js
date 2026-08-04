@@ -7,12 +7,12 @@ export const createProgress = async (req, res) => {
     const { challengeId, name } = req.body;
 
     if (!challengeId) {
-      return res.status(400).json({ success: false, message: 'challengeId is required' });
+      return res.status(400).json({ success: false, message: 'Challenge ID is required.' });
     }
 
-    const challenge = await Challenge.findById(challengeId);
+    const challenge = await Challenge.findById(challengeId).catch(() => null);
     if (!challenge) {
-      return res.status(404).json({ success: false, message: 'Challenge not found' });
+      return res.status(404).json({ success: false, message: 'Challenge not found.' });
     }
 
     const initialParticipants = challenge.participants.map((uId) => ({
@@ -31,11 +31,11 @@ export const createProgress = async (req, res) => {
 
     return res.status(201).json({
       success: true,
+      message: 'Progress tracked successfully!',
       progressId: progress._id,
     });
   } catch (error) {
-    console.error('Create progress error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
@@ -45,12 +45,12 @@ export const addPointsToUser = async (req, res) => {
     const { userId, points } = req.body;
 
     if (!userId || points === undefined) {
-      return res.status(400).json({ success: false, message: 'userId and points are required' });
+      return res.status(400).json({ success: false, message: 'User ID and points are required.' });
     }
 
-    let progress = await Progress.findById(progressId);
+    let progress = await Progress.findById(progressId).catch(() => null);
     if (!progress) {
-      return res.status(404).json({ success: false, message: 'Progress record not found' });
+      return res.status(404).json({ success: false, message: 'Progress record not found.' });
     }
 
     const participantIndex = progress.participants.findIndex(
@@ -70,11 +70,10 @@ export const addPointsToUser = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Points added',
+      message: 'Points updated successfully!',
     });
   } catch (error) {
-    console.error('Add points error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };
 
@@ -82,9 +81,9 @@ export const getChallengeProgress = async (req, res) => {
   try {
     const { challengeId } = req.params;
 
-    const challenge = await Challenge.findById(challengeId);
+    const challenge = await Challenge.findById(challengeId).catch(() => null);
     if (!challenge) {
-      return res.status(404).json({ success: false, message: 'Challenge not found' });
+      return res.status(404).json({ success: false, message: 'Challenge not found.' });
     }
 
     const progressList = await Progress.find({ challengeId }).populate('participants.userId', 'name email userImage');
@@ -114,7 +113,6 @@ export const getChallengeProgress = async (req, res) => {
       participants,
     });
   } catch (error) {
-    console.error('Get challenge progress error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: error.message || 'An unexpected error occurred.' });
   }
 };

@@ -1,6 +1,5 @@
 {
-  "name": "fitness_challenge_tracking_platform_frontend",
-  "description": "Frontend for Fitness Challenge Tracking Platform",
+  "name": "Apex_Performance_Frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,9 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.5.1",
     "@tailwindcss/vite": "^4.3.2",
+    "lucide-react": "^1.28.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^6.30.0",
     "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
