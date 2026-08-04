@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'development' ? '/api' : 'https://fitness-challenge-tracking-platform-beta.vercel.app/api');
 
 let activeRequestsCount = 0;
 const loadingSubscribers = new Set<(loading: boolean) => void>();
